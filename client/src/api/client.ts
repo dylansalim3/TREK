@@ -31,8 +31,13 @@ function translateRateLimit(): string {
   }
 }
 
+// Allow overriding the API host at build time (e.g. Cloudflare Pages → Worker URL).
+// Defaults to same-origin `/api` so the Express dev server continues to work locally.
+const API_BASE = (import.meta.env?.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
+const apiBaseURL = API_BASE ? `${API_BASE}/api` : '/api'
+
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseURL,
   withCredentials: true,
   timeout: 8000,
   headers: {
