@@ -176,8 +176,14 @@ const RESET_TABLES = [
 
 export async function resetTestDb(): Promise<void> {
   await env.DB.prepare('PRAGMA foreign_keys = OFF').run();
+  const { results } = await env.DB.prepare(
+    `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'sqlite_%'`
+  ).all<{ name: string }>();
+  const existingTables = new Set((results ?? []).map((r) => r.name));
   for (const table of RESET_TABLES) {
-    await env.DB.prepare(`DELETE FROM "${table}"`).run();
+    if (existingTables.has(table)) {
+      await env.DB.prepare(`DELETE FROM "${table}"`).run();
+    }
   }
   await env.DB.prepare('PRAGMA foreign_keys = ON').run();
 }

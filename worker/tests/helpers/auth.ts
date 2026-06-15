@@ -6,7 +6,7 @@ export async function generateToken(
   userId: number,
   extraClaims: Record<string, unknown> = {}
 ): Promise<string> {
-  return await new SignJWT({ sub: String(userId), ...extraClaims })
+  return await new SignJWT({ sub: userId, ...extraClaims })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setIssuer('trek-api')
