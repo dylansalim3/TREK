@@ -9,7 +9,9 @@
     "tail": "wrangler tail",
     "db:migrate:local": "wrangler d1 migrations apply trek-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply trek-db --remote",
-    "db:execute:remote": "wrangler d1 execute trek-db --remote --file"
+    "db:execute:remote": "wrangler d1 execute trek-db --remote --file",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.2",
