@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:test';
 import bcrypt from 'bcryptjs';
+import { TEST_BCRYPT_ROUNDS } from './auth';
 
 let _userSeq = 0;
 let _tripSeq = 0;
@@ -22,7 +23,7 @@ export async function createUser(
   const email = overrides.email ?? `user${_userSeq}@test.example.com`;
   const username = overrides.username ?? `testuser${_userSeq}`;
   const role = overrides.role ?? 'user';
-  const hash = await bcrypt.hash(password, 4);
+  const hash = await bcrypt.hash(password, TEST_BCRYPT_ROUNDS);
 
   const result = await env.DB.prepare(
     'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?) RETURNING *'
@@ -119,58 +120,37 @@ export async function createTag(
 
 const RESET_TABLES = [
   'assignment_participants',
-  'day_assignments',
-  'place_tags',
-  'places',
-  'budget_item_members',
+  'audit_log',
   'budget_items',
-  'trip_photos',
-  'trip_files',
-  'reservations',
-  'day_accommodations',
-  'day_notes',
-  'days',
-  'share_tokens',
-  'trip_members',
-  'trips',
-  'collab_message_reactions',
   'collab_messages',
+  'collab_notes',
   'collab_poll_votes',
   'collab_polls',
-  'collab_notes',
-  'file_links',
-  'packing_category_assignees',
-  'packing_bag_members',
-  'packing_bags',
-  'packing_items',
-  'packing_template_items',
-  'packing_template_categories',
-  'packing_templates',
-  'tags',
-  'settings',
-  'mcp_tokens',
-  'invite_tokens',
+  'day_accommodations',
+  'day_assignments',
+  'day_notes',
+  'days',
+  'notification_channel_preferences',
   'notifications',
-  'audit_log',
-  'user_notice_dismissals',
-  'visited_regions',
-  'visited_countries',
-  'bucket_list',
+  'packing_items',
   'password_reset_tokens',
-  'vacay_entries',
+  'photos',
+  'place_tags',
+  'places',
+  'reservations',
+  'settings',
+  'tags',
+  'trip_files',
+  'trip_members',
+  'trips',
   'vacay_company_holidays',
+  'vacay_entries',
   'vacay_holiday_calendars',
   'vacay_plan_members',
+  'vacay_plans',
   'vacay_user_colors',
   'vacay_user_years',
   'vacay_years',
-  'vacay_plans',
-  'journey_share_tokens',
-  'journey_photos',
-  'journey_entries',
-  'journey_contributors',
-  'journey_trips',
-  'journeys',
   'users',
 ];
 

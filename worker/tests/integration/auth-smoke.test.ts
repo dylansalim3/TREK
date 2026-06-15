@@ -1,16 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SELF, env, applyD1Migrations } from 'cloudflare:test';
 import { createUser, resetTestDb } from '../helpers/factories';
-
 import initialSchema from '../../migrations/0001_initial_schema.sql?raw';
-
-function splitSql(raw: string): string[] {
-  return raw
-    .split(';\n')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-    .map((s) => (s.endsWith(';') ? s : s + ';'));
-}
+import { splitSql } from '../helpers/sql';
 
 beforeEach(async () => {
   await applyD1Migrations(env.DB, [

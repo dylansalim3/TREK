@@ -1,14 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { env, applyD1Migrations } from 'cloudflare:test';
 import rawSql from '../migrations/0001_initial_schema.sql?raw';
-
-function splitSql(sql: string): string[] {
-  return sql
-    .split(';\n')
-    .map((q) => q.trim())
-    .filter((q) => q.length > 0 && q !== ';')
-    .map((q) => (q.endsWith(';') ? q : q + ';'));
-}
+import { splitSql } from './helpers/sql';
 
 describe('DB migrations snapshot', () => {
   it('produces the expected sqlite_master shape', async () => {
