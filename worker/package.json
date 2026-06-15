@@ -1,0 +1,26 @@
+{
+  "name": "trek-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "db:migrate:local": "wrangler d1 migrations apply trek-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply trek-db --remote",
+    "db:execute:remote": "wrangler d1 execute trek-db --remote --file"
+  },
+  "dependencies": {
+    "hono": "^4.6.15",
+    "@hono/zod-validator": "^0.4.2",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.0.0"
+  }
+}

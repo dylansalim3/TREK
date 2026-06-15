@@ -1,0 +1,49 @@
+name = "trek-api"
+main = "src/index.ts"
+compatibility_date = "2025-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve the built React/Vite client (../client/dist) from the same Worker.
+# Any request that doesn't match an /api or /ws route falls through to assets,
+# and the SPA fallback rewrites unknown paths to index.html for React Router.
+[assets]
+directory = "../client/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = false
+
+# D1 binding (SQLite-compatible managed DB)
+[[d1_databases]]
+binding = "DB"
+database_name = "trek-db"
+database_id = "e1a7ce42-497e-4abb-a9a1-a2c781c0c079"
+
+# R2 binding (uploads / photos / files / backups)
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "trek-uploads"
+
+# Durable Object for WebSocket collab rooms (one DO per trip)
+[[durable_objects.bindings]]
+name = "TRIP_ROOM"
+class_name = "TripRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TripRoom"]
+
+[vars]
+APP_NAME = "TREK"
+# Override at deploy time with `wrangler secret put` for sensitive values
+JWT_ISSUER = "trek-api"
+
+[observability]
+enabled = true
+
+# Scheduled jobs (replaces node-cron)
+[triggers]
+crons = [
+  "*/15 * * * *",   # idempotency cleanup, token cleanup
+  "0 * * * *",      # hourly cache cleanup
+  "0 8 * * *"       # daily trip + todo reminders
+]

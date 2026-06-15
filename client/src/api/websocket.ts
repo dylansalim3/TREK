@@ -35,6 +35,10 @@ export function setPreReconnectHook(fn: (() => Promise<void>) | null): void {
 }
 
 function getWsUrl(wsToken: string): string {
+  // VITE_WS_URL lets Pages deployments point at the Worker's /ws endpoint
+  // (e.g. wss://trek-api.<account>.workers.dev/ws). Falls back to same-origin.
+  const override = (import.meta.env?.VITE_WS_URL as string | undefined)?.replace(/\/$/, '')
+  if (override) return `${override}?token=${wsToken}`
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
   return `${protocol}://${location.host}/ws?token=${wsToken}`
 }
