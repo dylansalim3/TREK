@@ -35,17 +35,27 @@ export function setPreReconnectHook(fn: (() => Promise<void>) | null): void {
 }
 
 function getWsUrl(wsToken: string): string {
-  // VITE_WS_URL lets Pages deployments point at the Worker's /ws endpoint
-  // (e.g. wss://trek-api.<account>.workers.dev/ws). Falls back to same-origin.
-  const override = (import.meta.env?.VITE_WS_URL as string | undefined)?.replace(/\/$/, '')
-  if (override) return `${override}?token=${wsToken}`
+  // VITE_WS_URL → explicit override (wss://host/ws). Else derive from
+  // VITE_API_URL (so local dev pointing at a remote Worker stays consistent),
+  // else fall back to same-origin.
+  const explicit = (import.meta.env?.VITE_WS_URL as string | undefined)?.replace(/\/$/, '')
+  if (explicit) return `${explicit}?token=${wsToken}`
+  const apiBase = (import.meta.env?.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
+  if (apiBase) {
+    const wsBase = apiBase.replace(/^http/, 'ws')
+    return `${wsBase}/ws?token=${wsToken}`
+  }
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
   return `${protocol}://${location.host}/ws?token=${wsToken}`
 }
 
+function apiOrigin(): string {
+  return (import.meta.env?.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? ''
+}
+
 async function fetchWsToken(): Promise<string | null> {
   try {
-    const resp = await fetch('/api/auth/ws-token', {
+    const resp = await fetch(`${apiOrigin()}/api/auth/ws-token`, {
       method: 'POST',
       credentials: 'include',
     })

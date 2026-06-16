@@ -1,0 +1,64 @@
+name: Deploy (Prod)
+
+# Push to main → build client, run worker tests, apply D1 migrations,
+# deploy the worker to the prod Cloudflare environment.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/**'
+      - 'worker/**'
+      - '.github/workflows/deploy-prod.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & deploy to prod
+    runs-on: ubuntu-latest
+    environment: cloudflare-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            worker/package-lock.json
+
+      - name: Install client deps
+        run: cd client && npm ci
+
+      - name: Install worker deps
+        run: cd worker && npm ci
+
+      - name: Worker tests
+        run: cd worker && npm test
+
+      - name: Build client
+        run: cd client && npm run build
+
+      - name: Apply D1 migrations (prod)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: d1 migrations apply trek-db --remote --env prod
+
+      - name: Deploy worker (prod)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy --env prod

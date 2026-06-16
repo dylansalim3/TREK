@@ -5,13 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "tail": "wrangler tail",
+    "deploy:dev": "wrangler deploy --env dev",
+    "deploy:prod": "wrangler deploy --env prod",
+    "tail:dev": "wrangler tail --env dev",
+    "tail:prod": "wrangler tail --env prod",
     "db:migrate:local": "wrangler d1 migrations apply trek-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply trek-db --remote",
-    "db:execute:remote": "wrangler d1 execute trek-db --remote --file",
+    "db:migrate:dev": "wrangler d1 migrations apply trek-db-dev --remote --env dev",
+    "db:migrate:prod": "wrangler d1 migrations apply trek-db --remote --env prod",
+    "db:execute:dev": "wrangler d1 execute trek-db-dev --remote --env dev --file",
+    "db:execute:prod": "wrangler d1 execute trek-db --remote --env prod --file",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.2",

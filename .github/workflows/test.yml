@@ -8,6 +8,7 @@ on:
     branches: [main, dev]
     paths:
       - 'server/**'
+      - 'worker/**'
       - '.github/workflows/test.yml'
       - 'client/**'
 
@@ -65,3 +66,22 @@ jobs:
           name: frontend-coverage
           path: client/coverage/
           retention-days: 7
+
+  worker-tests:
+    name: Worker Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Install dependencies
+        run: cd worker && npm ci
+
+      - name: Run tests
+        run: cd worker && npm test

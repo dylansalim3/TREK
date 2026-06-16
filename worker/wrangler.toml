@@ -1,3 +1,15 @@
+# TREK API on Cloudflare Workers.
+#
+# Two deploy environments live in this file:
+#   - dev  → deployed from the `dev` git branch by .github/workflows/deploy-dev.yml
+#   - prod → deployed from `main` by .github/workflows/deploy-prod.yml
+#
+# Each environment uses its own Worker name, D1 database, and R2 bucket so
+# the dev backend can never corrupt prod data.
+#
+# Local development uses the top-level (no [env]) config below, which points
+# at the dev resources. Run `npm run dev` (= `wrangler dev`) to start it.
+
 name = "trek-api"
 main = "src/index.ts"
 compatibility_date = "2025-06-01"
@@ -12,18 +24,22 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = false
 
-# D1 binding (SQLite-compatible managed DB)
+[observability]
+enabled = true
+
+# -----------------------------------------------------------------------------
+# Top-level bindings = local `wrangler dev` defaults. CI never deploys this
+# block (workflows always pass `--env dev` or `--env prod`).
+# -----------------------------------------------------------------------------
 [[d1_databases]]
 binding = "DB"
 database_name = "trek-db"
 database_id = "e1a7ce42-497e-4abb-a9a1-a2c781c0c079"
 
-# R2 binding (uploads / photos / files / backups)
 [[r2_buckets]]
 binding = "UPLOADS"
 bucket_name = "trek-uploads"
 
-# Durable Object for WebSocket collab rooms (one DO per trip)
 [[durable_objects.bindings]]
 name = "TRIP_ROOM"
 class_name = "TripRoom"
@@ -34,16 +50,90 @@ new_sqlite_classes = ["TripRoom"]
 
 [vars]
 APP_NAME = "TREK"
-# Override at deploy time with `wrangler secret put` for sensitive values
 JWT_ISSUER = "trek-api"
+APP_ENV = "local"
 
-[observability]
+# Cron triggers will be re-added by execution-plan F1 (idempotency + crons)
+# once the scheduled() handler dispatches real work. Deploying an empty
+# [triggers] block also fails on tokens without the Workers Schedules scope.
+# [triggers]
+# crons = []
+
+# -----------------------------------------------------------------------------
+# Dev environment — deployed on every push to `dev`.
+# Resources are isolated from prod.
+# -----------------------------------------------------------------------------
+[env.dev]
+name = "trek-api-dev"
+
+[env.dev.assets]
+directory = "../client/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = false
+
+[env.dev.observability]
 enabled = true
 
-# Scheduled jobs (replaces node-cron)
-[triggers]
-crons = [
-  "*/15 * * * *",   # idempotency cleanup, token cleanup
-  "0 * * * *",      # hourly cache cleanup
-  "0 8 * * *"       # daily trip + todo reminders
-]
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "trek-db-dev"
+database_id = "5b62d65e-e38a-4bd7-a213-0eb5503ce06c"
+
+[[env.dev.r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "trek-uploads-dev"
+
+[[env.dev.durable_objects.bindings]]
+name = "TRIP_ROOM"
+class_name = "TripRoom"
+
+[[env.dev.migrations]]
+tag = "v1"
+new_sqlite_classes = ["TripRoom"]
+
+[env.dev.vars]
+APP_NAME = "TREK"
+JWT_ISSUER = "trek-api"
+APP_ENV = "dev"
+
+# See top-level [triggers] note — re-added by F1.
+
+# -----------------------------------------------------------------------------
+# Prod environment — deployed on every push to `main`.
+# -----------------------------------------------------------------------------
+[env.prod]
+name = "trek-api"
+
+[env.prod.assets]
+directory = "../client/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = false
+
+[env.prod.observability]
+enabled = true
+
+[[env.prod.d1_databases]]
+binding = "DB"
+database_name = "trek-db"
+database_id = "e1a7ce42-497e-4abb-a9a1-a2c781c0c079"
+
+[[env.prod.r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "trek-uploads"
+
+[[env.prod.durable_objects.bindings]]
+name = "TRIP_ROOM"
+class_name = "TripRoom"
+
+[[env.prod.migrations]]
+tag = "v1"
+new_sqlite_classes = ["TripRoom"]
+
+[env.prod.vars]
+APP_NAME = "TREK"
+JWT_ISSUER = "trek-api"
+APP_ENV = "prod"
+
+# See top-level [triggers] note — re-added by F1.

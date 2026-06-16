@@ -25,6 +25,9 @@ server/uploads/
 .env
 .env.*
 !.env.example
+# Vite mode-specific defaults are public (no secrets), committed on purpose.
+!client/.env.development
+!client/.env.production
 
 # OS files
 .DS_Store
