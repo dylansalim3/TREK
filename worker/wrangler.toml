@@ -79,7 +79,7 @@ enabled = true
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "trek-db-dev"
-database_id = "e1a7ce42-497e-4abb-a9a1-a2c781c0c079"
+database_id = "5b62d65e-e38a-4bd7-a213-0eb5503ce06c"
 
 [[env.dev.r2_buckets]]
 binding = "UPLOADS"
