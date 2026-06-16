@@ -106,6 +106,47 @@ app.post('/login', async (c) => {
   });
 });
 
+app.get('/app-config', async (c) => {
+  const count = await c.env.DB.prepare('SELECT COUNT(*) as n FROM users').first<{ n: number }>();
+  const hasUsers = (count?.n ?? 0) > 0;
+
+  const getSetting = async (key: string) =>
+    (await c.env.DB.prepare('SELECT value FROM app_settings WHERE key = ? LIMIT 1').bind(key).first<{ value: string }>())?.value ?? null;
+
+  const allowReg = (await getSetting('allow_registration')) ?? 'true';
+  const passwordReg = (await getSetting('password_registration')) ?? null;
+  // password_registration key overrides allow_registration when present
+  const registrationEnabled = passwordReg !== null ? passwordReg !== 'false' : allowReg !== 'false';
+
+  const isDemo = c.env.APP_ENV === 'demo';
+  const setupComplete = hasUsers && !(await c.env.DB.prepare(
+    "SELECT id FROM users WHERE role = 'admin' AND must_change_password = 1 LIMIT 1"
+  ).first());
+
+  return c.json({
+    has_users: hasUsers,
+    setup_complete: setupComplete,
+    allow_registration: isDemo ? false : registrationEnabled,
+    password_login: true,
+    password_registration: isDemo ? false : registrationEnabled,
+    oidc_login: false,
+    oidc_registration: false,
+    oidc_configured: false,
+    oidc_only_mode: false,
+    demo_mode: isDemo,
+    require_mfa: false,
+    version: '0.0.0',
+    is_prerelease: false,
+    has_maps_key: false,
+    timezone: 'UTC',
+    allowed_file_types: 'jpg,jpeg,png,gif,webp,heic,pdf,doc,docx,xls,xlsx,txt,csv',
+    notification_channel: 'none',
+    notification_channels: [],
+    available_channels: { email: false, webhook: false, inapp: true },
+    trip_reminders_enabled: true,
+  });
+});
+
 app.get('/me', requireAuth, async (c) => {
   const auth = c.get('user')!;
   const user = await c.env.DB.prepare(
