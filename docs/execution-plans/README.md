@@ -58,10 +58,10 @@ To avoid collisions when multiple agents add SQL migrations in parallel:
 
 | ID  | Prefix              | Status        | Migration block |
 | --- | ------------------- | ------------- | --------------- |
-| R1  | [publicConfig](./port-publicConfig.md)    | ⏳ Not started | 0300–0399 |
-| R2  | [settings](./port-settings.md)            | ⏳ Not started | 0400–0499 |
-| R3  | [tags](./port-tags.md)                    | ⏳ Not started | 0500–0599 |
-| R4  | [categories](./port-categories.md)        | ⏳ Not started | 0600–0699 |
+| R1  | [publicConfig](./port-publicConfig.md)    | ✅ Done (2026-06-16) | 0300–0399 |
+| R2  | [settings](./port-settings.md)            | ✅ Done (2026-06-16) | 0400–0499 |
+| R3  | [tags](./port-tags.md)                    | ✅ Done (2026-06-16) | 0500–0599 |
+| R4  | [categories](./port-categories.md)        | ✅ Done (2026-06-16) | 0600–0699 |
 | R5  | [airports](./port-airports.md)            | ⏳ Not started | 0700–0799 |
 | R6  | [atlas](./port-atlas.md)                  | ⏳ Not started | 0800–0899 |
 | R7  | [weather](./port-weather.md)              | ⏳ Not started | 0900–0999 |

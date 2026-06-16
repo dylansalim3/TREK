@@ -1,10 +1,12 @@
 # R2 — Port `/api/settings`
 
-**Status:** ⏳ Not started
+**Status:** ✅ Done
 **Owner:** unassigned
-**Migration block:** 0400–0499
+**Migration block:** 0400–0499 (no schema changes needed)
 **Blocked by:** none
 **Blocks:** none
+
+Completed: 2026-06-16
 
 ## Goal
 
@@ -13,9 +15,9 @@ Port the per-user settings endpoints: `GET /settings`, `PUT /settings`,
 
 ## Scope
 
-- [ ] `worker/src/routes/settings.ts` with `requireAuth` middleware.
-- [ ] Mount under `/api/settings`, remove from `STUBBED_PREFIXES`.
-- [ ] Port tests from `server/tests/integration/settings.test.ts`.
+- [x] `worker/src/routes/settings.ts` with `requireAuth` middleware.
+- [x] Mount under `/api/settings`, remove from `STUBBED_PREFIXES`.
+- [x] Port tests from `server/tests/integration/settings.test.ts`.
 
 ## Source references
 
@@ -26,3 +28,9 @@ Port the per-user settings endpoints: `GET /settings`, `PUT /settings`,
 
 `PUT /settings { key, value }` followed by `GET /settings` returns the new
 value for the authenticated user.
+
+## Changes
+
+- `worker/src/routes/settings.ts` — Hono router with GET, PUT, POST /bulk
+- `worker/src/index.ts` — mounted settings router, removed from STUBBED_PREFIXES
+- `worker/tests/integration/settings.test.ts` — 10 integration tests (SET-001 through SET-010)

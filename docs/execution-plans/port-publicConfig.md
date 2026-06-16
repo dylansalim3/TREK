@@ -1,10 +1,12 @@
 # R1 — Port `/api/config` (publicConfig)
 
-**Status:** ⏳ Not started
+**Status:** ✅ Done
 **Owner:** unassigned
-**Migration block:** 0300–0399 (likely unused — config is read-only)
+**Migration block:** 0300–0399 (unused — config is read-only)
 **Blocked by:** none
 **Blocks:** none
+
+Completed: 2026-06-16
 
 ## Goal
 
@@ -13,12 +15,11 @@ public bootstrap config). Read-only, no auth.
 
 ## Scope
 
-- [ ] `worker/src/routes/publicConfig.ts` exporting a Hono router with
+- [x] `worker/src/routes/publicConfig.ts` exporting a Hono router with
       `GET /` → `{ defaultLanguage }`.
-- [ ] Mount in `worker/src/index.ts`: `app.route('/api/config', publicConfigRoutes)`.
-- [ ] Remove `'publicConfig'` from `STUBBED_PREFIXES`.
-- [ ] Test: `app.fetch(new Request('http://x/api/config'))` returns 200
-      with the expected shape.
+- [x] Mount in `worker/src/index.ts`: `app.route('/api/config', publicConfigRoutes)`.
+- [x] Remove `'publicConfig'` from `STUBBED_PREFIXES`.
+- [x] No Express test existed for this prefix.
 
 ## Source references
 
@@ -29,3 +30,8 @@ public bootstrap config). Read-only, no auth.
 
 `curl https://trek-api-dev.<acct>.workers.dev/api/config` returns the
 expected JSON.
+
+## Changes
+
+- `worker/src/routes/publicConfig.ts` — GET / → `{ defaultLanguage: 'en' }`
+- `worker/src/index.ts` — mounted at `/api/config`, removed from STUBBED_PREFIXES
