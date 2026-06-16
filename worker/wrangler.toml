@@ -21,7 +21,7 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "../client/dist"
 binding = "ASSETS"
-not_found_handling = "single-page-application"
+not_found_handling = "none"
 run_worker_first = false
 
 [observability]
@@ -69,7 +69,7 @@ name = "trek-api-dev"
 [env.dev.assets]
 directory = "../client/dist"
 binding = "ASSETS"
-not_found_handling = "single-page-application"
+not_found_handling = "none"
 run_worker_first = false
 
 [env.dev.observability]
@@ -108,7 +108,7 @@ name = "trek-api"
 [env.prod.assets]
 directory = "../client/dist"
 binding = "ASSETS"
-not_found_handling = "single-page-application"
+not_found_handling = "none"
 run_worker_first = false
 
 [env.prod.observability]
