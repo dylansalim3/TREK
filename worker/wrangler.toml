@@ -53,12 +53,11 @@ APP_NAME = "TREK"
 JWT_ISSUER = "trek-api"
 APP_ENV = "local"
 
-[triggers]
-crons = [
-  "*/15 * * * *",
-  "0 * * * *",
-  "0 8 * * *",
-]
+# Cron triggers will be re-added by execution-plan F1 (idempotency + crons)
+# once the scheduled() handler dispatches real work. Deploying an empty
+# [triggers] block also fails on tokens without the Workers Schedules scope.
+# [triggers]
+# crons = []
 
 # -----------------------------------------------------------------------------
 # Dev environment — deployed on every push to `dev`.
@@ -98,12 +97,7 @@ APP_NAME = "TREK"
 JWT_ISSUER = "trek-api"
 APP_ENV = "dev"
 
-[env.dev.triggers]
-crons = [
-  "*/15 * * * *",
-  "0 * * * *",
-  "0 8 * * *",
-]
+# See top-level [triggers] note — re-added by F1.
 
 # -----------------------------------------------------------------------------
 # Prod environment — deployed on every push to `main`.
@@ -142,9 +136,4 @@ APP_NAME = "TREK"
 JWT_ISSUER = "trek-api"
 APP_ENV = "prod"
 
-[env.prod.triggers]
-crons = [
-  "*/15 * * * *",
-  "0 * * * *",
-  "0 8 * * *",
-]
+# See top-level [triggers] note — re-added by F1.
