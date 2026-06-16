@@ -10,6 +10,10 @@ import { cors } from 'hono/cors';
 import authRoutes from './routes/auth';
 import tripRoutes from './routes/trips';
 import fileRoutes from './routes/files';
+import categoryRoutes from './routes/categories';
+import tagRoutes from './routes/tags';
+import publicConfigRoutes from './routes/publicConfig';
+import settingsRoutes from './routes/settings';
 import type { AppVariables, Env } from './types';
 
 const app = new Hono<{ Bindings: Env; Variables: AppVariables }>();
@@ -32,15 +36,19 @@ app.get('/health', (c) =>
 app.route('/api/auth', authRoutes);
 app.route('/api/trips', tripRoutes);
 app.route('/api/files', fileRoutes);
+app.route('/api/categories', categoryRoutes);
+app.route('/api/tags', tagRoutes);
+app.route('/api/config', publicConfigRoutes);
+app.route('/api/settings', settingsRoutes);
 
 // Stub all routes that haven't been migrated from /server yet.
 // Each returns 501 with the corresponding source file so the client can fail loudly.
 const STUBBED_PREFIXES = [
   'admin', 'airports', 'assignments', 'atlas', 'backup', 'budget',
-  'categories', 'collab', 'dayNotes', 'days', 'journey', 'maps',
+  'collab', 'dayNotes', 'days', 'journey', 'maps',
   'memories', 'notifications', 'oauth', 'oidc', 'packing', 'photos',
-  'places', 'publicConfig', 'reservations', 'settings', 'share',
-  'systemNotices', 'tags', 'todo', 'vacay', 'weather',
+  'places', 'reservations', 'share',
+  'systemNotices', 'todo', 'vacay', 'weather',
 ];
 for (const prefix of STUBBED_PREFIXES) {
   app.all(`/api/${prefix}/*`, (c) =>
@@ -65,7 +73,16 @@ app.get('/ws/:tripId', async (c) => {
   return stub.fetch(c.req.raw);
 });
 
-app.notFound((c) => c.json({ error: 'Not found' }, 404));
+app.notFound(async (c) => {
+  const { pathname } = new URL(c.req.url);
+  // API and WS paths that don't match should stay as JSON 404.
+  if (pathname.startsWith('/api/') || pathname.startsWith('/ws/')) {
+    return c.json({ error: 'Not found' }, 404);
+  }
+  // All other paths are SPA routes — serve index.html from the assets binding.
+  const indexUrl = new URL('/index.html', c.req.url).toString();
+  return c.env.ASSETS.fetch(new Request(indexUrl, c.req.raw));
+});
 
 app.onError((err, c) => {
   console.error('Unhandled error', err);
