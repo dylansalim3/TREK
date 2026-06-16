@@ -84,29 +84,54 @@ roughly:
 
 ## Local development
 
+Top-level `Makefile` covers the common loop. From the repo root:
+
 ```bash
-# In worker/
-npm install
-source /tmp/cf-env.sh           # or: export CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=…
-npm run db:migrate:local        # apply base schema to local D1 sim
-npm run dev                     # wrangler dev on :8787
+make install         # install client + worker deps
+make dev             # start Vite against the dev Cloudflare backend (default)
+make dev-worker      # alternatively: run wrangler dev locally on :8787
+make test            # client + worker tests
 ```
+
+If you prefer the Vite proxy → local Worker setup, run `make dev-worker` in
+one terminal and `make dev-client` in another, after unsetting
+`VITE_API_URL` in `client/.env.development` (or override in `.env.local`).
 
 ## Deploying
 
-```bash
-# Build the client (output goes to client/dist, which the Worker serves)
-cd ../client && npm run build
+Pushing to **`dev`** auto-deploys `trek-api-dev` via
+`.github/workflows/deploy-dev.yml`. Pushing to **`main`** auto-deploys
+`trek-api` via `.github/workflows/deploy-prod.yml`. Both workflows build
+the client, run worker tests, apply D1 migrations, then `wrangler deploy`
+with the matching `--env`.
 
-cd ../worker
-npm run db:migrate:remote       # apply any new migrations
-npm run deploy
+Manual deploy:
+
+```bash
+make deploy-dev      # build client + deploy worker to trek-api-dev
+make deploy-prod     # same, to trek-api (prod)
+```
+
+CI needs two GitHub secrets per environment
+(`cloudflare-dev`, `cloudflare-prod`):
+
+- `CLOUDFLARE_API_TOKEN` — token with Workers + D1 + R2 write access
+- `CLOUDFLARE_ACCOUNT_ID`
+
+## First-time setup (per account)
+
+```bash
+make cf-login                   # interactive wrangler login
+make cf-setup-prod              # create trek-db + trek-uploads
+make cf-setup-dev               # create trek-db-dev + trek-uploads-dev
+# Copy the printed database_id values into worker/wrangler.toml under
+# [[d1_databases]] and [[env.dev.d1_databases]] / [[env.prod.d1_databases]].
+echo -n "<jwt-signing-secret>" | (cd worker && npx wrangler secret put JWT_SECRET --env prod)
+echo -n "<jwt-signing-secret>" | (cd worker && npx wrangler secret put JWT_SECRET --env dev)
 ```
 
 ## Secrets
 
-```bash
-echo -n "<jwt-signing-secret>" | wrangler secret put JWT_SECRET
-```
-
-Already set on the live deployment. Rotate by re-running the command.
+- `JWT_SECRET` — token signing key, per env (`wrangler secret put JWT_SECRET --env dev|prod`).
+- Provider-specific keys per the in-progress execution plans
+  (`RESEND_API_KEY`, `GOOGLE_MAPS_API_KEY`, etc.) live in the same place.
