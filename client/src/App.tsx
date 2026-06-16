@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore'
 import { useSettingsStore } from './store/settingsStore'
 import { useAddonStore } from './store/addonStore'
 import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import DashboardPage from './pages/DashboardPage'
@@ -85,6 +86,34 @@ function ProtectedRoute({ children, adminRequired = false, addonId }: ProtectedR
       <BottomNav />
     </div>
   )
+}
+
+function RegisterGuard({ children }: { children: ReactNode }) {
+  const [registrationAllowed, setRegistrationAllowed] = React.useState<boolean | null>(null)
+
+  useEffect(() => {
+    authApi.getAppConfig().then((cfg) => {
+      // Block direct access to /register when registration is disabled and users exist
+      setRegistrationAllowed(cfg.allow_registration !== false || !cfg.has_users)
+    }).catch(() => {
+      // If config fetch fails, allow through (RegisterPage will handle errors itself)
+      setRegistrationAllowed(true)
+    })
+  }, [])
+
+  if (registrationAllowed === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
+  if (!registrationAllowed) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <>{children}</>
 }
 
 function RootRedirect() {
@@ -214,7 +243,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/shared/:token" element={<SharedTripPage />} />
         <Route path="/public/journey/:token" element={<JourneyPublicPage />} />
-        <Route path="/register" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterGuard><RegisterPage /></RegisterGuard>} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         {/* OAuth 2.1 consent page — intentionally outside ProtectedRoute */}

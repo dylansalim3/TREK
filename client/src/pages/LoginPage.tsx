@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { SUPPORTED_LANGUAGES, useTranslation, detectBrowserLanguage } from '../i18n'
@@ -834,14 +834,16 @@ export default function LoginPage(): React.ReactElement {
               </button>
             </form>
 
-            {/* Toggle login/register */}
-            {showRegisterOption && appConfig?.has_users && !appConfig?.demo_mode && !passwordChangeStep && (
+            {/* Navigate to /register */}
+            {showRegisterOption && appConfig?.has_users && !appConfig?.demo_mode && !passwordChangeStep && mode === 'login' && (
               <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: '#9ca3af' }}>
-                {mode === 'login' ? t('login.noAccount') + ' ' : t('login.hasAccount') + ' '}
-                <button onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); setMfaStep(false); setMfaToken(''); setMfaCode('') }}
-                  style={{ background: 'none', border: 'none', color: '#111827', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>
-                  {mode === 'login' ? t('login.register') : t('login.signIn')}
-                </button>
+                {t('login.noAccount') + ' '}
+                <Link
+                  to="/register"
+                  style={{ color: '#111827', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  {t('login.register')}
+                </Link>
               </p>
             )}
             </>)}

@@ -103,43 +103,15 @@ describe('LoginPage', () => {
     });
   });
 
-  describe('FE-PAGE-LOGIN-005: Registration toggle visible', () => {
-    it('shows a Register button to switch to registration mode', async () => {
+  describe('FE-PAGE-LOGIN-005: Registration link visible', () => {
+    it('shows a Register link pointing to /register', async () => {
       // Default appConfig has allow_registration: true, has_users: true
       render(<LoginPage />);
 
       await waitFor(() => {
-        // The register toggle link text appears
-        expect(screen.getByRole('button', { name: /^register$/i })).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('FE-PAGE-LOGIN-006: Register creates account', () => {
-    it('switches to register mode and submits registration form', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /^register$/i })).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByRole('button', { name: /^register$/i }));
-
-      // Username field appears in register mode
-      await waitFor(() => {
-        expect(screen.getByPlaceholderText('admin')).toBeInTheDocument();
-      });
-
-      await user.type(screen.getByPlaceholderText('admin'), 'newuser');
-      await user.type(screen.getByPlaceholderText(EMAIL_PLACEHOLDER), 'new@example.com');
-      await user.type(screen.getByPlaceholderText(PASSWORD_PLACEHOLDER), 'password123');
-
-      await user.click(screen.getByRole('button', { name: /create account/i }));
-
-      // On success, takeoff animation
-      await waitFor(() => {
-        expect(document.querySelector('.takeoff-overlay')).toBeInTheDocument();
+        const link = screen.getByRole('link', { name: /^register$/i });
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute('href', '/register');
       });
     });
   });
@@ -427,7 +399,7 @@ describe('LoginPage', () => {
         expect(screen.getByPlaceholderText(EMAIL_PLACEHOLDER)).toBeInTheDocument();
       });
 
-      expect(screen.queryByRole('button', { name: /^register$/i })).toBeNull();
+      expect(screen.queryByRole('link', { name: /^register$/i })).toBeNull();
     });
   });
 
@@ -537,41 +509,15 @@ describe('LoginPage', () => {
     });
   });
 
-  describe('FE-PAGE-LOGIN-020: Register form validates password length', () => {
-    it('shows error when registration password is shorter than 8 characters', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /^register$/i })).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByRole('button', { name: /^register$/i }));
-
-      await waitFor(() => {
-        expect(screen.getByPlaceholderText('admin')).toBeInTheDocument();
-      });
-
-      await user.type(screen.getByPlaceholderText('admin'), 'newuser');
-      await user.type(screen.getByPlaceholderText(EMAIL_PLACEHOLDER), 'new@example.com');
-      await user.type(screen.getByPlaceholderText(PASSWORD_PLACEHOLDER), 'short');
-      await user.click(screen.getByRole('button', { name: /create account/i }));
-
-      await waitFor(() => {
-        expect(screen.getByText(/at least 8/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('FE-PAGE-LOGIN-021: Invite token pre-fills register mode', () => {
-    it('renders register form when invite query param is present', async () => {
+  describe('FE-PAGE-LOGIN-021: Invite token auto-switches LoginPage to register mode', () => {
+    it('shows the register form automatically when invite query param is present', async () => {
       server.use(
         http.get('/api/auth/invite/:token', () => {
           return HttpResponse.json({ valid: true });
         }),
       );
 
-      // Simulate ?invite=abc123 by replacing window.location.search
+      // Simulate ?invite=abc123 via window.location.search (LoginPage reads it directly)
       const originalSearch = window.location.search;
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -589,6 +535,18 @@ describe('LoginPage', () => {
         configurable: true,
         writable: true,
         value: { ...window.location, search: originalSearch },
+      });
+    });
+  });
+
+  describe('FE-PAGE-LOGIN-NAV: register link navigation', () => {
+    it('renders a /register link when has_users=true and registration is enabled', async () => {
+      render(<LoginPage />);
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: /^register$/i });
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute('href', '/register');
       });
     });
   });

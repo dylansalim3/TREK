@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useTranslation } from '../i18n'
 import { Map, Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
@@ -16,6 +16,8 @@ export default function RegisterPage(): React.ReactElement {
 
   const { register } = useAuthStore()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('invite') || ''
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
@@ -33,7 +35,7 @@ export default function RegisterPage(): React.ReactElement {
 
     setIsLoading(true)
     try {
-      await register(username, email, password)
+      await register(username, email, password, inviteToken || undefined)
       navigate('/dashboard')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t('register.failed'))

@@ -85,6 +85,35 @@ describe('RegisterPage', () => {
     });
   });
 
+  describe('FE-PAGE-REG-004b: Invite token sent on registration', () => {
+    it('includes invite_token in POST body when ?invite= present in URL', async () => {
+      let capturedBody: Record<string, unknown> | null = null;
+      server.use(
+        http.post('/api/auth/register', async ({ request }) => {
+          capturedBody = await request.json() as Record<string, unknown>;
+          return HttpResponse.json({
+            user: { id: 1, username: 'testuser', email: 'test@example.com', role: 'user' },
+            token: 'test-token',
+          });
+        }),
+      );
+
+      const user = userEvent.setup();
+      render(<RegisterPage />, { initialEntries: ['/register?invite=abc123'] });
+
+      await user.type(screen.getByPlaceholderText(USERNAME_PLACEHOLDER), 'testuser');
+      await user.type(screen.getByPlaceholderText(EMAIL_PLACEHOLDER), 'test@example.com');
+      await user.type(screen.getByPlaceholderText(PASSWORD_PLACEHOLDER), 'password123');
+      await user.type(screen.getByPlaceholderText(CONFIRM_PASSWORD_PLACEHOLDER), 'password123');
+      await user.click(screen.getByRole('button', { name: /^register$/i }));
+
+      await waitFor(() => {
+        expect(capturedBody).not.toBeNull();
+        expect((capturedBody as Record<string, unknown>).invite_token).toBe('abc123');
+      });
+    });
+  });
+
   describe('FE-PAGE-REG-005: Loading state during submission', () => {
     it('disables submit button and shows loading text while registering', async () => {
       server.use(
