@@ -75,13 +75,13 @@ app.get('/ws/:tripId', async (c) => {
 
 app.notFound(async (c) => {
   const { pathname } = new URL(c.req.url);
-  // API and WS paths that don't match should stay as JSON 404.
+  // API and WS paths that don't match should return JSON 404.
   if (pathname.startsWith('/api/') || pathname.startsWith('/ws/')) {
     return c.json({ error: 'Not found' }, 404);
   }
-  // All other paths are SPA routes — serve index.html from the assets binding.
-  const indexUrl = new URL('/index.html', c.req.url).toString();
-  return c.env.ASSETS.fetch(new Request(indexUrl, c.req.raw));
+  // All other paths are SPA routes — serve the root (index.html) from assets.
+  const rootUrl = new URL('/', c.req.url).toString();
+  return c.env.ASSETS.fetch(new Request(rootUrl, { method: 'GET', headers: c.req.raw.headers }));
 });
 
 app.onError((err, c) => {
