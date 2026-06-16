@@ -836,15 +836,27 @@ export default function LoginPage(): React.ReactElement {
 
             {/* Navigate to /register */}
             {showRegisterOption && appConfig?.has_users && !appConfig?.demo_mode && !passwordChangeStep && mode === 'login' && (
-              <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: '#9ca3af' }}>
-                {t('login.noAccount') + ' '}
-                <Link
-                  to="/register"
-                  style={{ color: '#111827', fontWeight: 600, textDecoration: 'none' }}
-                >
-                  {t('login.register')}
-                </Link>
-              </p>
+              <Link
+                to="/register"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  marginTop: 12, width: '100%', padding: '12px',
+                  background: 'transparent', color: '#111827',
+                  border: '1.5px solid #d1d5db', borderRadius: 12,
+                  fontSize: 14, fontWeight: 600, textDecoration: 'none',
+                  transition: 'border-color 0.15s, background 0.15s',
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.currentTarget.style.borderColor = '#6b7280';
+                  e.currentTarget.style.background = '#f9fafb';
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.currentTarget.style.borderColor = '#d1d5db';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                {t('login.register')}
+              </Link>
             )}
             </>)}
           </div>
